@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Doping in Professional Cycling</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.12.0/d3.js" charset="utf-8"></script>
+    <link href="https://fonts.googleapis.com/css?family=Nunito+Sans|Open+Sans&display=swap" rel="stylesheet">
+  </head>
+
+  <style media="screen">
+
+  </style>
+
+  <body>
+    <script type="text/javascript">
+      // Create XML request to get data.
+      var req = new XMLHttpRequest();
+      req.open(
+        "GET",
+        "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/cyclist-data.json",
+        true
+      )
+
+      // onload is a function called when XMLHttpRequest transaction completes.
+      req.onload = function() {
+        var json = JSON.parse(req.responseText)
+        var dataset = json.data;
+
+        const w = 1000;
+        const h = 500;
+        const padding = 60;
+
+        // Time (y-axis) and Years (x-axis)
+        // Time (mm:ss)
+        // Each plot point has Name, Country, Year, Time, Reason.
+      }
+
+
+
+    </script>
+  </body>
+</html>
