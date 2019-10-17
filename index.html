@@ -46,17 +46,19 @@
         });
 
         var times = dataset.map(d => {
-          return (d['Time']);
+          let time = d['Time'].split(":");
+          let result = (parseInt(time[0]) * 60) + parseInt(time[1])
+          return result;
         });
 
         // Time (y-axis) and Years (x-axis)
         const xScale = d3.scaleTime()
                          .domain(d3.extent(years))
-                         .range(padding, (w - padding))
+                         .range([padding, (w - padding)]);
 
         const yScale = d3.scaleLinear()
                          .domain(d3.extent(times))
-                         .range(padding, (w - padding))
+                         .range([(h - padding), padding]);
         // Time (mm:ss)
         // Each plot point has Name, Country, Year, Time, Reason.
 
@@ -70,6 +72,28 @@
         const svg = wrapper.append("svg")
                            .attr("width", w)
                            .attr("height", h);
+
+        // Add circles to svg.
+        svg.selectAll("circle")
+           .data(dataset)
+           .enter()
+           .append("circle")
+           .attr("year", d => {
+             return d['Year'];
+           })
+           .attr("time", d => {
+             return d['Time'];
+           })
+           .attr("cx", (d, i) => {
+             console.log(d['Year'])
+             return xScale(d['Year'])
+           })
+           .attr("cy", (d, i) => {
+             let time = d['Time'].split(":");
+             let result = (parseInt(time[0]) * 60) + parseInt(time[1])
+             return yScale(result);
+           })
+           .attr("r", 10)
       };
 
       req.send();
