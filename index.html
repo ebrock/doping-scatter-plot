@@ -8,7 +8,17 @@
   </head>
 
   <style media="screen">
+    .wrapper {
+  		width: 1000px;
+  		margin: auto;
+  		box-shadow: 2px 2px 10px black, -2px -2px 10px black;
+  	}
 
+    .title {
+      font-family: Arial;
+      font-size: 40px;
+      text-align: center;
+    }
   </style>
 
   <body>
@@ -19,24 +29,61 @@
         "GET",
         "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/cyclist-data.json",
         true
-      )
+      );
 
       // onload is a function called when XMLHttpRequest transaction completes.
       req.onload = function() {
-        var json = JSON.parse(req.responseText)
-        var dataset = json.data;
+        var dataset = JSON.parse(req.responseText);
+
+        console.log(dataset)
 
         const w = 1000;
         const h = 500;
         const padding = 60;
 
+        var years = dataset.map(d => {
+          return (d['Year']);
+        });
+
+        var times = dataset.map(d => {
+          return (d['Time']);
+        });
+
         // Time (y-axis) and Years (x-axis)
+        const xScale = d3.scaleTime()
+                         .domain(d3.extent(years))
+                         .range(padding, (w - padding))
+
+        const yScale = d3.scaleLinear()
+                         .domain(d3.extent(times))
+                         .range(padding, (w - padding))
         // Time (mm:ss)
         // Each plot point has Name, Country, Year, Time, Reason.
-      }
 
+        // Create wrapper.
+        const wrapper = d3.select("body")
+                          .append("div")
+                          .attr("id", "wrapper")
+                          .attr("class", "wrapper");
 
+        // Create svg.
+        const svg = wrapper.append("svg")
+                           .attr("width", w)
+                           .attr("height", h);
+      };
 
+      req.send();
+
+      d3.select("body")
+        .append("h1")
+        .attr("id", "title")
+        .attr("class", "title")
+        .text("Doping in Professional Cycling");
+
+      console.log("End");
     </script>
+
+    <div id="app">
+    </div>
   </body>
 </html>
