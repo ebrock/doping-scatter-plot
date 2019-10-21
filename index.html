@@ -66,11 +66,18 @@
 
         // The API returns time as mm:ss. This converts mm:ss to seconds so
         // it can be graphed.
+        // var times = dataset.map(d => {
+        //   let time = d['Time'].split(":");
+        //   let result = (parseInt(time[0]) * 60) + parseInt(time[1])
+        //   return result;
+        // });
         var times = dataset.map(d => {
-          let time = d['Time'].split(":");
-          let result = (parseInt(time[0]) * 60) + parseInt(time[1])
+          console.log(d['Time']);
+          let specifier = "%M:%S";
+          let result = (d3.timeParse(specifier)(d['Time']))
+          console.log(result);
           return result;
-        });
+        })
 
         // Time (y-axis) and Years (x-axis)
         const xScale = d3.scaleTime()
@@ -79,7 +86,7 @@
 
         const yScale = d3.scaleTime()
                          .domain(d3.extent(times))
-                         .range([(h - padding), padding]);
+                         .range([padding, (h - padding)]);
         // Time (mm:ss)
         // Each plot point has Name, Country, Year, Time, Reason.
 
@@ -118,9 +125,9 @@
              return xScale(new Date(d['Year'], 1, 1));
            })
            .attr("cy", (d, i) => {
-             let time = d['Time'].split(":");
-             let result = (parseInt(time[0]) * 60) + parseInt(time[1])
-             return h - yScale(result - 0);
+             let specifier = "%M:%S";
+             let result = (d3.timeParse(specifier)(d['Time']))
+             return yScale(result - 0);
            })
            .attr("r", 8)
 
