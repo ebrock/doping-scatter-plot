@@ -14,10 +14,14 @@
   		box-shadow: 2px 2px 10px black, -2px -2px 10px black;
   	}
 
-    .circle {
+    .dot {
       fill: lightblue;
       fill-opacity: 0.8;
       stroke: black;
+    }
+
+    .legendtext {
+      font-family: Arial;
     }
 
     .title {
@@ -73,6 +77,7 @@
         // Time (y-axis) and Years (x-axis)
         const xScale = d3.scaleTime()
                          // .domain(d3.extent(years))
+                         // Tried adding spacing here. Check back if test fails.
                          .domain([d3.min(years, d => { return d }), d3.max(years, d => { return d })])
                          .range([padding, (w - padding)]).nice();
 
@@ -104,12 +109,14 @@
            .data(dataset)
            .enter()
            .append("circle")
-           .attr("class", "circle")
-           .attr("year", d => {
+           .attr("class", "dot")
+           .attr("data-xvalue", d => {
              return d['Year'];
            })
-           .attr("time", d => {
-             return d['Time'];
+           .attr("data-yvalue", d => {
+             let specifier = "%M:%S";
+             let result = (d3.timeParse(specifier)(d['Time']))
+             return result;
            })
            .attr("cx", (d, i) => {
              return xScale(new Date(d['Year'], 1, 1));
@@ -119,15 +126,25 @@
              let result = (d3.timeParse(specifier)(d['Time']))
              return yScale(result - 0);
            })
-           .attr("r", 8)
+           .attr("r", 6)
+           .style("fill", function(d) {
+             if (d['Doping'] === "") {
+               return "pink";     // if not Doping return pink.
+             } else {
+               return "purple";   // if Doping return purple.
+             }
+           })
 
         // Each plot point has Name, Country, Year, Time, Reason.
         var bar = svg.selectAll("circle")
           .on("mouseover", function(d) {
             tooltip.style("visibility", "visible");
-            tooltip.html("Year: " + d['Year'] + "<br />" +
-                         "Name: " + d['Name'] + "<br / />" +
-                         "Time: " + d['Time']);
+            tooltip.attr("data-year", d['Year']);
+            tooltip.html("Name: " + d['Name'] + "<br />" +
+                         "Nationality: " + d['Nationality'] + "<br  />" +
+                         "Year: " + d['Year'] + "<br />" +
+                         "Time: " + d['Time'] + "<br  />" +
+                         "Doping: " + d['Doping']);
           })
           .on("mousemove", function() {
             tooltip.style("top", event.pageY-20+"px").style("left", event.pageX+25+"px");
@@ -150,6 +167,33 @@
              .attr("transform", "translate(" + padding + ", 0)")
              .attr("id", "y-axis")
              .call(yAxis);
+
+          // Create legend.
+          const legend = d3.select("svg")
+                               .attr("id", "legend");
+          const doping = legend.append("circle")
+                               .attr("cx", w - 100)
+                               .attr("cy", padding)
+                               .attr("r", 6)
+                               .style("fill", "pink");
+          const dopingText = legend.append("text")
+                               .attr("x", w - 80)
+                               .attr("y", padding)
+                               .text("clean")
+                               .attr("class", "legendtext")
+                               .attr("alignment-baseline", "middle");
+          const clean = legend.append("circle")
+                               .attr("cx", w - 100)
+                               .attr("cy", padding - 20)
+                               .attr("r", 6)
+                               .style("fill", "purple");
+          const cleanText = legend.append("text")
+                               .attr("x", w - 80)
+                               .attr("y", padding - 20)
+                               .text("doping")
+                               .attr("class", "legendtext")
+                               .attr("alignment-baseline", "middle");
+
       };
 
       req.send();
@@ -162,6 +206,7 @@
 
       console.log("End");
     </script>
+    <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
 
     <div id="app">
     </div>
