@@ -14,11 +14,26 @@
   		box-shadow: 2px 2px 10px black, -2px -2px 10px black;
   	}
 
+    .circle {
+      fill: lightblue;
+      fill-opacity: 0.8;
+      stroke: black;
+    }
+
     .title {
       font-family: Arial;
       font-size: 40px;
       text-align: center;
     }
+
+    .tooltip {
+      font-family: Arial;
+      border: 1px solid black;
+      padding: 5px;
+      background-color: lightblue;
+      opacity: 0.8;
+    }
+
   </style>
 
   <body>
@@ -41,10 +56,16 @@
         const h = 500;
         const padding = 60;
 
+        // var years = dataset.map(d => {
+        //   return (d['Year']);
+        // });
+
         var years = dataset.map(d => {
-          return (d['Year']);
+          return new Date(d['Year'], 1, 1);
         });
 
+        // The API returns time as mm:ss. This converts mm:ss to seconds so
+        // it can be graphed.
         var times = dataset.map(d => {
           let time = d['Time'].split(":");
           let result = (parseInt(time[0]) * 60) + parseInt(time[1])
@@ -56,7 +77,7 @@
                          .domain(d3.extent(years))
                          .range([padding, (w - padding)]);
 
-        const yScale = d3.scaleLinear()
+        const yScale = d3.scaleTime()
                          .domain(d3.extent(times))
                          .range([(h - padding), padding]);
         // Time (mm:ss)
@@ -73,11 +94,20 @@
                            .attr("width", w)
                            .attr("height", h);
 
+        const tooltip = d3.select("body")
+                          .append("div")
+                          .attr("id", "tooltip")
+                          .attr("class", "tooltip")
+                          .style("position", "absolute")
+                          .style("z-index", 10)
+                          .style("visibility", "hidden");
+
         // Add circles to svg.
         svg.selectAll("circle")
            .data(dataset)
            .enter()
            .append("circle")
+           .attr("class", "circle")
            .attr("year", d => {
              return d['Year'];
            })
@@ -85,15 +115,43 @@
              return d['Time'];
            })
            .attr("cx", (d, i) => {
-             console.log(d['Year'])
-             return xScale(d['Year'])
+             return xScale(new Date(d['Year'], 1, 1));
            })
            .attr("cy", (d, i) => {
              let time = d['Time'].split(":");
              let result = (parseInt(time[0]) * 60) + parseInt(time[1])
-             return yScale(result);
+             return h - yScale(result - 0);
            })
-           .attr("r", 10)
+           .attr("r", 8)
+
+        var bar = svg.selectAll("circle")
+          .on("mouseover", function(d) {
+            tooltip.style("visibility", "visible");
+            tooltip.html("Year: " + d['Year'] + "<br />" +
+                         "Name: " + d['Name'] + "<br / />" +
+                         "Time: " + d['Time']);
+          })
+          .on("mousemove", function() {
+            tooltip.style("top", event.pageY-20+"px").style("left", event.pageX+25+"px");
+          })
+          .on("mouseout", function() {
+            tooltip.style("visibility", "hidden");
+          })
+
+          //  Create axes.
+          const xAxis = d3.axisBottom(xScale);
+          const yAxis = d3.axisLeft(yScale).tickFormat(d3.timeFormat("%M:%S"));
+
+          // g element to group SVG elements.
+          svg.append("g")
+             .attr("transform", "translate(0, " + (h - padding) + ")")
+             .attr("id", "x-axis")
+             .call(xAxis);
+
+          svg.append("g")
+             .attr("transform", "translate(" + padding + ", 0)")
+             .attr("id", "y-axis")
+             .call(yAxis);
       };
 
       req.send();
