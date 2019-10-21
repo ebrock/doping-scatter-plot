@@ -56,21 +56,12 @@
         const h = 500;
         const padding = 60;
 
-        // var years = dataset.map(d => {
-        //   return (d['Year']);
-        // });
-
         var years = dataset.map(d => {
-          return new Date(d['Year'], 1, 1);
-        });
+          let specifier = "%Y";
+          let result = (d3.timeParse(specifier)(d['Year']))
+          return result;
+        })
 
-        // The API returns time as mm:ss. This converts mm:ss to seconds so
-        // it can be graphed.
-        // var times = dataset.map(d => {
-        //   let time = d['Time'].split(":");
-        //   let result = (parseInt(time[0]) * 60) + parseInt(time[1])
-        //   return result;
-        // });
         var times = dataset.map(d => {
           console.log(d['Time']);
           let specifier = "%M:%S";
@@ -81,14 +72,13 @@
 
         // Time (y-axis) and Years (x-axis)
         const xScale = d3.scaleTime()
-                         .domain(d3.extent(years))
-                         .range([padding, (w - padding)]);
+                         // .domain(d3.extent(years))
+                         .domain([d3.min(years, d => { return d }), d3.max(years, d => { return d })])
+                         .range([padding, (w - padding)]).nice();
 
         const yScale = d3.scaleTime()
                          .domain(d3.extent(times))
                          .range([padding, (h - padding)]);
-        // Time (mm:ss)
-        // Each plot point has Name, Country, Year, Time, Reason.
 
         // Create wrapper.
         const wrapper = d3.select("body")
@@ -131,6 +121,7 @@
            })
            .attr("r", 8)
 
+        // Each plot point has Name, Country, Year, Time, Reason.
         var bar = svg.selectAll("circle")
           .on("mouseover", function(d) {
             tooltip.style("visibility", "visible");
@@ -146,7 +137,7 @@
           })
 
           //  Create axes.
-          const xAxis = d3.axisBottom(xScale);
+          const xAxis = d3.axisBottom(xScale).tickFormat(d3.timeFormat("%Y"));
           const yAxis = d3.axisLeft(yScale).tickFormat(d3.timeFormat("%M:%S"));
 
           // g element to group SVG elements.
